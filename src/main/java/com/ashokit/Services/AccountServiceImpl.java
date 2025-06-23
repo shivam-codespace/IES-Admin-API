@@ -9,6 +9,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import com.ashokit.Binding.UnlockAccForm;
 import com.ashokit.Binding.UserAccountForm;
 import com.ashokit.Entity.UserEntity;
 import com.ashokit.IesAdminModuleApplication;
@@ -40,6 +41,7 @@ public class AccountServiceImpl implements AccountService{
 		
 		//set account status
 		entity.setAccStatus("LOCKED");
+		
 		entity.setActiveSw("Y");
 		
 		userRepo.save(entity);
@@ -49,9 +51,9 @@ public class AccountServiceImpl implements AccountService{
 		String  subject="";
 		String  body = "";
 		
-		boolean status =emailUtils.sendEmail(subject, body, accForm.getEmail());
+		return emailUtils.sendEmail(subject, body, accForm.getEmail());
 		
-		return status;
+	
 	}
 
 	
@@ -70,9 +72,9 @@ public class AccountServiceImpl implements AccountService{
 		
 		List<UserAccountForm> users = new ArrayList<UserAccountForm>();
 		
-		forEach(UserEntity userEntity : userEntities){
+		for (UserEntity userEntity : userEntities){
 			UserAccountForm user = new UserAccountForm();
-			BeanUtils.copyProperties(userEntity,user);
+			BeanUtils.copyProperties(userEntity, user);
 			users.add(user);
 		}
 		
@@ -105,9 +107,9 @@ public class AccountServiceImpl implements AccountService{
 	
 	//user status --> Active or inactive
 	@Override
-	public String changeAccountStatus(Integer userId, String status) {
+	public String changeAccountStatus(Integer userId, String status){
 		
-		int cnt=userRepo.updateAccStatus(userId, status);
+		int cnt = userRepo.updateAccStatus(userId, status);
 		
 		if(cnt>0) {
 			return "Status Changed";
@@ -116,6 +118,18 @@ public class AccountServiceImpl implements AccountService{
 		return "Failed to changed";
 	}
 	
+	@Override
+	public String unlockUserAccount (UnlockAccForm unlockAccForm){
+		
+		UserEntity entity = userRepo.findByEmail(unlockAccForm.getEmail());
+		
+		entity.setPwd(unlockAccForm.getNewPwd());
+		entity.setAccStatus("UNLOCKED");
+		
+		userRepo.save(entity);
+		
+		return "ACCOUNT UNLOCKED";
+	}
 	
 	
 	
@@ -154,5 +168,7 @@ public class AccountServiceImpl implements AccountService{
 	    String randomString = sb.toString();
 	    return randomString;
 	}
+	
+	
 
 }

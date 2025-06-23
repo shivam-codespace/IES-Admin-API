@@ -10,5 +10,7 @@ public interface PlanRepo extends JpaRepository <PlanEntity, Integer>{
 	
 	@Query("update PlanEntity set accStatus=:status where plandId:planId")
 	public Integer updatePlanStatus(Integer planId,String status);
+	
+	 
 
 }
