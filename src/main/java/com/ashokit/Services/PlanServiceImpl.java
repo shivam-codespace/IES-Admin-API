@@ -9,9 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ashokit.Binding.PlanForm;
-import com.ashokit.Binding.UserAccountForm;
 import com.ashokit.Entity.PlanEntity;
-import com.ashokit.Entity.UserEntity;
 import com.ashokit.Repository.PlanRepo;
 
 
@@ -32,7 +30,9 @@ public class PlanServiceImpl implements PlanService{
 		
 		BeanUtils.copyProperties(planForm, planEntity);
 		
-		return pla;
+		planRepo.save(planEntity);
+		
+		return true;
 	}
 	
 	
@@ -42,15 +42,15 @@ public class PlanServiceImpl implements PlanService{
 	public List<PlanForm> fetchPlan() {
 		List<PlanEntity> planEntities = planRepo.findAll();
 		
-		List<PlanForm> plan = new ArrayList<PlanForm>();
+		List<PlanForm> plans = new ArrayList<PlanForm>();
 		
-		forEach(PlanEntity planEntity : planEntities){
-			UserAccountForm user = new UserAccountForm();
-			BeanUtils.copyProperties(planEntity,user);
-			plan.add(user);
+		for(PlanEntity planEntity : planEntities){
+			PlanForm planForm = new PlanForm();
+			BeanUtils.copyProperties(planEntity,planForm);
+			plans.add(planForm);
 		}
 		
-		return plan;
+		return plans;
 	}
 
 	

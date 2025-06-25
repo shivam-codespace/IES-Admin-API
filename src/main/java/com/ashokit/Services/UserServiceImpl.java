@@ -1,12 +1,20 @@
 package com.ashokit.Services;
 
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
+import java.util.stream.Stream;
 
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.ashokit.Binding.DasboardCards;
 import com.ashokit.Binding.LoginForm;
+import com.ashokit.Binding.UserAccountForm;
+import com.ashokit.Constants.AppConstants;
 import com.ashokit.Entity.EligEntity;
 import com.ashokit.Entity.UserEntity;
 import com.ashokit.Repository.PlanRepo;
@@ -35,13 +43,13 @@ public class UserServiceImpl implements UserService {
 		
 		if (entity == null) {
 			
-			return "Invalid Credentials";
+			return AppConstants.INVALID_CRED;
 		}
 		
-		if("Y".equals(entity.getActiveSw()) && "UNLOCKED".equals(entity.getAccStatus())) {
-			return "success";
+		if(AppConstants.Y_STR.equals(entity.getActiveSw()) && AppConstants.UNLOCKED.equals(entity.getAccStatus())) {
+			return AppConstants.SUCCESS;
 		}else {
-			return "Account Locked/In-Active";
+			return AppConstants.ACC_BLOCKED_INACTIVE;
 		}
 	}
 
@@ -53,8 +61,10 @@ public class UserServiceImpl implements UserService {
 			return  false;
 		}else {
 			
-			String subject ="";
-			String body ="";
+			String subject =AppConstants.RECOVER_PWD;
+			
+			String body =readEmailBody(AppConstants.FORGOT_PWD_FILE , userEntity);
+			
 			return emailUtils.sendEmail(subject, body, email);
 		}
 		
@@ -67,18 +77,14 @@ public class UserServiceImpl implements UserService {
 		
 		List<EligEntity> eligList = eligRepo.findAll();
 		
-		Long approvedCnt = eligList.stream().filter(ed ->ed.getPlanStatus().equals("AP")).count();
+		Long approvedCnt = eligList.stream().filter(ed ->ed.getPlanStatus().equals(AppConstants.AP)).count();
 		
-		Long deniedCnt = eligList.stream().filter(ed ->ed.getPlanStatus().equals("DN")).count();
+		Long deniedCnt = eligList.stream().filter(ed ->ed.getPlanStatus().equals(AppConstants.DN)).count();
 		
 		Double total = eligList.stream().mapToDouble(ed ->ed.getBenefitAmt()).sum();
 
-		
-		
+	
 		DasboardCards card = new DasboardCards();
-		
-		
-		
 		
 		card.setPlansCnt(planCount);
 		card.setApprovedCnt(approvedCnt);
@@ -86,6 +92,48 @@ public class UserServiceImpl implements UserService {
 		card.setBeniftAmtGiven(total);
 		
 		return card;
+	}
+	
+	@Override
+	public UserAccountForm getUserByEmail(String email) {
+		
+		UserEntity userEntity = userRepo.findByEmail(email);
+		
+		UserAccountForm user = new UserAccountForm();
+		
+		BeanUtils.copyProperties(userEntity, user);
+		
+		return user;
+	}
+	
+	
+	private String readEmailBody (String filename,UserEntity user) {
+		
+		StringBuilder sb = new StringBuilder();
+		
+		try (Stream<String> lines = Files.lines(Paths.get(filename))){
+		
+			lines.forEach(line -> {
+			
+				line = line.replace(AppConstants.FNAME, user.getFullName());
+				
+				line = line.replace(AppConstants.PWD, user.getPwd());
+				
+				line = line.replace(AppConstants.EMAIL, user.getEmail());
+				
+				sb.append(line);
+												
+			});
+			
+			
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
+		
+		return sb.toString();
+		
+		
+		
 	}
 
 }

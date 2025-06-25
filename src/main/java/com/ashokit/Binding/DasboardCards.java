@@ -13,6 +13,16 @@ public class DasboardCards {
 	private Long deniedCnt;
 	
 	private Double  beniftAmtGiven;
+	
+	private UserAccountForm user;
+
+	public UserAccountForm getUser() {
+		return user;
+	}
+
+	public void setUser(UserAccountForm user) {
+		this.user = user;
+	}
 
 	public Long getPlansCnt() {
 		return plansCnt;
