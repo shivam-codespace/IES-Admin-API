@@ -3,7 +3,7 @@ server:
 spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    password: test
+    password: "0000"
     url: jdbc:mysql://localhost:3306/admin_api
     username: root
   jpa:
